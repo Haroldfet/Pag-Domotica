@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="refresh" content="5;url=/">
+  <title>CRITICAL ERROR :: RESET</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@700&display=swap');
+
+    /*     VARIABLES - paleta rojo alerta */
+    :root {
+      --red:        #ff0033;
+      --red-dim:    #aa0022;
+      --red-glow:   rgba(255, 0, 51, 0.4);
+      --orange:     #ff4400;
+      --bg:         #050000;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--bg);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: 'Share Tech Mono', monospace;
+      overflow: hidden;
+    }
+
+    /*     SCANLINES rojas */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(255, 0, 51, 0.03) 2px,
+        rgba(255, 0, 51, 0.03) 4px
+      );
+      pointer-events: none;
+      z-index: 999;
+    }
+
+    /*   GLITCH DE PÁGINA - franjas rojas y naranja */
+    .page-glitch {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 998;
+    }
+    .page-glitch::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(255, 0, 51, 0.05);
+      animation: page-glitch-red 4s infinite;
+      clip-path: polygon(0 0, 100% 0, 100% 0, 0 0);
+    }
+    .page-glitch::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(255, 68, 0, 0.04);
+      animation: page-glitch-orange 4s infinite;
+      clip-path: polygon(0 0, 100% 0, 100% 0, 0 0);
+    }
+    @keyframes page-glitch-red {
+      0%,85%,100% { clip-path: polygon(0 0,100% 0,100% 0,0 0); transform: translate(0); }
+      86%  { clip-path: polygon(0 10%,100% 10%,100% 18%,0 18%); transform: translate(-5px, 0); }
+      87%  { clip-path: polygon(0 50%,100% 50%,100% 57%,0 57%); transform: translate(5px, 0); }
+      88%  { clip-path: polygon(0 75%,100% 75%,100% 82%,0 82%); transform: translate(-3px, 0); }
+      89%  { clip-path: polygon(0 0,100% 0,100% 0,0 0); transform: translate(0); }
+    }
+    @keyframes page-glitch-orange {
+      0%,87%,100% { clip-path: polygon(0 0,100% 0,100% 0,0 0); transform: translate(0); }
+      88%  { clip-path: polygon(0 35%,100% 35%,100% 42%,0 42%); transform: translate(5px, 0); }
+      89%  { clip-path: polygon(0 60%,100% 60%,100% 68%,0 68%); transform: translate(-4px, 0); }
+      90%  { clip-path: polygon(0 0,100% 0,100% 0,0 0); transform: translate(0); }
+    }
+
+    /*  FLASH DE ALERTA - parpadeo rojo más agresivo */
+    .page-flash {
+      position: fixed;
+      inset: 0;
+      background: rgba(255, 0, 51, 0.04);
+      pointer-events: none;
+      z-index: 997;
+      animation: alert-flash 4s infinite;
+    }
+    @keyframes alert-flash {
+      0%,90%,100% { opacity: 0; }
+      91% { opacity: 1; }
+      92% { opacity: 0; }
+      93% { opacity: 0.7; }
+      94% { opacity: 0; }
+      95% { opacity: 0.4; }
+      96% { opacity: 0; }
+    }
+
+    /* TARJETA - fondo oscuro con borde rojo */
+    .card {
+      position: relative;
+      z-index: 10;
+      background: #0a0000ee;
+      border: 1px solid rgba(255, 0, 51, 0.5);
+      border-radius: 4px;
+      padding: 45px 40px;
+      width: 90%;
+      max-width: 440px;
+      text-align: center;
+      color: white;
+      box-shadow:
+        0 0 30px rgba(255, 0, 51, 0.2),
+        0 0 80px rgba(255, 0, 51, 0.05),
+        inset 0 0 30px rgba(255, 0, 51, 0.03);
+    }
+
+    /* Esquinas decorativas en rojo */
+    .card::before, .card::after {
+      content: '';
+      position: absolute;
+      width: 18px; height: 18px;
+      border-color: var(--red);
+      border-style: solid;
+    }
+    .card::before { top: -1px; left: -1px; border-width: 2px 0 0 2px; }
+    .card::after  { bottom: -1px; right: -1px; border-width: 0 2px 2px 0; }
+
+    /* ICONO DE ALERTA - triángulo pulsante */
+    .alert-icon {
+      font-size: 55px;
+      margin-bottom: 20px;
+      display: block;
+      animation: icon-pulse 1s ease-in-out infinite;
+      filter: drop-shadow(0 0 15px var(--red));
+    }
+    @keyframes icon-pulse {
+      0%,100% { transform: scale(1);    filter: drop-shadow(0 0 10px var(--red)); }
+      50%      { transform: scale(1.1); filter: drop-shadow(0 0 25px var(--red)); }
+    }
+
+    /* ETIQUETA DE ESTADO */
+    .status-tag {
+      font-size: 11px;
+      color: var(--red);
+      letter-spacing: 4px;
+      margin-bottom: 15px;
+      opacity: 0.8;
+      animation: blink-tag 1.5s step-end infinite;
+    }
+    @keyframes blink-tag {
+      0%,100% { opacity: 0.8; }
+      50%      { opacity: 0.2; }
+    }
+
+    /* TÍTULO CON GLITCH ROJO */
+    .glitch {
+      font-family: 'Orbitron', monospace;
+      font-size: 20px;
+      color: var(--red);
+      text-transform: uppercase;
+      letter-spacing: 4px;
+      position: relative;
+      text-shadow: 0 0 10px var(--red), 0 0 30px var(--red-glow);
+      animation: flicker 3s infinite;
+      margin-bottom: 10px;
+    }
+    .glitch::before, .glitch::after {
+      content: attr(data-text);
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%;
+    }
+    .glitch::before {
+      color: #ff6600;
+      animation: glitch-1 3s infinite;
+      clip-path: polygon(0 0, 100% 0, 100% 40%, 0 40%);
+    }
+    .glitch::after {
+      color: #ff0080;
+      animation: glitch-2 3s infinite;
+      clip-path: polygon(0 60%, 100% 60%, 100% 100%, 0 100%);
+    }
+    @keyframes glitch-1 {
+      0%,92%,100% { transform: translate(0); opacity: 0; }
+      93% { transform: translate(-4px, 1px); opacity: 0.9; }
+      95% { transform: translate(4px, -1px); opacity: 0.9; }
+    }
+    @keyframes glitch-2 {
+      0%,93%,100% { transform: translate(0); opacity: 0; }
+      94% { transform: translate(4px, 2px); opacity: 0.9; }
+      96% { transform: translate(-4px, -2px); opacity: 0.9; }
+    }
+    @keyframes flicker {
+      0%,93%,100% { opacity: 1; }
+      94% { opacity: 0.5; }
+      95% { opacity: 1; }
+      96% { opacity: 0.3; }
+      97% { opacity: 1; }
+    }
+
+    /* Subtítulo */
+    .subtitle {
+      font-size: 13px;
+      color: rgba(255, 0, 51, 0.6);
+      margin-bottom: 30px;
+      letter-spacing: 1px;
+    }
+
+    /* BARRA DE PROGRESO
+       Se llena en 5 segundos (mismo tiempo que el meta refresh)*/
+    .progress-label {
+      font-size: 10px;
+      color: rgba(255, 0, 51, 0.5);
+      letter-spacing: 2px;
+      margin-bottom: 8px;
+      text-align: left;
+    }
+    .progress-wrap {
+      background: rgba(255, 0, 51, 0.1);
+      border: 1px solid rgba(255, 0, 51, 0.2);
+      border-radius: 2px;
+      height: 8px;
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      border-radius: 2px;
+      background: linear-gradient(90deg, var(--red-dim), var(--red), var(--orange));
+      animation: fill-bar 5s linear forwards;
+      box-shadow: 0 0 10px var(--red), 0 0 20px var(--red-glow);
+    }
+    @keyframes fill-bar {
+      0%   { width: 0%; }
+      100% { width: 100%; }
+    }
+
+    /* NOTA FINAL */
+    .note {
+      font-size: 11px;
+      color: rgba(255, 0, 51, 0.35);
+      letter-spacing: 2px;
+    }
+
+    /* FOOTER */
+    .footer {
+      margin-top: 25px;
+      font-size: 10px;
+      letter-spacing: 2px;
+    }
+    .footer span { color: var(--red); opacity: 0.5; }
+
+  </style>
+</head>
+<body>
+
+  <!-- CAPAS DE GLITCH -->
+  <div class="page-glitch"></div>
+  <div class="page-flash"></div>
+
+  <!-- TARJETA DE ERROR -->
+  <div class="card">
+
+    <!-- Icono y etiqueta de estado -->
+    <span class="alert-icon">⚠️</span>
+    <p class="status-tag">[ ERROR CRÍTICO :: SISTEMA ]</p>
+
+    <!-- Título con glitch -->
+    <h1 class="glitch" data-text="WIFI ELIMINADO">WIFI ELIMINADO</h1>
+    <p class="subtitle">// Reiniciando dispositivo...</p>
+
+    <!-- Barra de progreso que se llena en 5s -->
+    <p class="progress-label">// REINICIANDO_SISTEMA.exe</p>
+    <div class="progress-wrap">
+      <div class="progress-bar"></div>
+    </div>
+
+    <p class="note">Serás redirigido automáticamente</p>
+
+    <!-- Footer -->
+    <div class="footer">
+      <span>© 2026 :: Proyecto Ing. Software :: ESP32</span>
+    </div>
+
+  </div>
+
+</body>
+</html>
