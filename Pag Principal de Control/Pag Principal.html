@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel Domótico</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma;
+    }
+    body {
+      background: #111;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .card {
+      background: #222;
+      padding: 40px;
+      border-radius: 20px;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    }
+    h1 { margin-bottom: 10px; }
+    p  { margin-bottom: 25px; color: #aaa; }
+    button {
+      padding: 15px 30px;
+      margin: 10px;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: bold;
+      color: white;
+      cursor: pointer;
+    }
+    .on    { background: #28a745; }
+    .off   { background: #dc3545; }
+    .reset { background: #ff9800; margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Panel Domótico</h1>
+    <p>Estado actual: %ESTADO%</p>
+
+    <a href="/on"><button  class="on">ENCENDER</button></a>
+    <a href="/off"><button class="off">APAGAR</button></a>
+
+    <br>
+
+    <a href="/resetwifi">
+      <button class="reset"
+        onclick="return confirm('¿Eliminar WiFi guardado?');">
+        ELIMINAR WIFI
+      </button>
+    </a>
+  </div>
+</body>
+</html>
