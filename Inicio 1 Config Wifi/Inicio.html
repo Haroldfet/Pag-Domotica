@@ -2,8 +2,10 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HACK_WIFI :: SETUP</title>
+  <meta author content="Harold Smith López Forero">
+  <title>Configuracion De Wifi</title>
   <style>
 
     /* FUENTES EXTERNAS */
@@ -47,7 +49,7 @@
       z-index: 999;          /* encima de todo */
     }
 
-    /* GLITCH DE PÁGINA COMPLETA */
+    /* GLITCH DE PAGINA */
     .page-glitch {
       position: fixed;
       inset: 0;
@@ -116,7 +118,7 @@
     .card {
       position: relative;
       z-index: 10;
-      background: #050505ee;   /* fondo sólido, tapa el canvas */
+      background: #050505ee;   /* fondo solido */
       border: 1px solid rgba(0, 255, 65, 0.3);
       border-radius: 4px;
       padding: 40px 35px;
@@ -151,7 +153,7 @@
       opacity: 0.7;
     }
 
-    /* TÍTULO CON EFECTO GLITCH   */
+    /* TÍTULO CON GLITCH   */
     .glitch {
       font-family: 'Orbitron', monospace;
       font-size: 22px;
@@ -168,13 +170,13 @@
       top: 0; left: 0;
       width: 100%;
     }
-    /* Copia cian - solo franja superior */
+    /* Copia cian solo la parte superior */
     .glitch::before {
       color: var(--neon-cyan);
       animation: glitch-1 3s infinite;
       clip-path: polygon(0 0, 100% 0, 100% 40%, 0 40%);
     }
-    /* Copia morada - solo franja inferior */
+    /* Copia morada solo la parte inferior */
     .glitch::after {
       color: var(--neon-purple);
       animation: glitch-2 3s infinite;
@@ -227,7 +229,7 @@
       text-transform: uppercase;
     }
 
-    /* Contenedor con símbolo ">" estilo terminal a la izquierda */
+    /* Contenedor con símbolo */
     .input-wrap {
       position: relative;
       display: flex;
@@ -288,7 +290,7 @@
       0%,100% { box-shadow: 0 0 15px rgba(0,255,65,0.2); }
       50%      { box-shadow: 0 0 30px rgba(0,255,65,0.5), 0 0 60px rgba(0,255,65,0.1); }
     }
-    /* Destello que cruza de izquierda a derecha al hacer hover */
+    /* Destello que cruza de izquierda a derecha */
     .btn::before {
       content: '';
       position: absolute;
@@ -324,11 +326,11 @@
 </head>
 <body>
 
-  <!-- CAPAS DE GLITCH SOBRE TODA LA PÁGINA -->
+  <!-- GLITCH DE LA PÁGINA -->
   <div class="page-glitch"></div>  <!-- distorsión de franjas cian/morado -->
   <div class="page-flash"></div>   <!-- flash de parpadeo general -->
 
-  <!-- CANVAS DE FONDO: bloques pixelados y números cayendo -->
+  <!-- bloques pixelados y números cayendo -->
   <div class="corrupt-zone fullscreen">
     <canvas id="canvas-bg"></canvas>
   </div>
