@@ -1,0 +1,1615 @@
+#pragma once
+const char CONFIG_HTML[] PROGMEM = R"CFGHTML(
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Configuracion WiFi</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: radial-gradient(1200px 800px at 10% 10%, #1f2b2a 0%, #141414 45%, #0c0c0c 100%);
+      font-family: "Merriweather", "Georgia", serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      color: #f3f4f6;
+    }
+    .card {
+      background: rgba(20, 20, 20, 0.85);
+      padding: 40px;
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 24px 60px rgba(0,0,0,0.45);
+      width: 90%;
+      max-width: 420px;
+      -webkit-backdrop-filter: blur(8px);
+      backdrop-filter: blur(8px);
+    }
+    h1 {
+      margin-bottom: 10px;
+      color: #9ae6b4;
+      font-size: 28px;
+      letter-spacing: 0.5px;
+    }
+    p.subtitle {
+      color: #cbd5e1;
+      margin-bottom: 24px;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .form-group {
+      margin-bottom: 18px;
+    }
+    label {
+      display: block;
+      margin-bottom: 8px;
+      color: #e2e8f0;
+      font-size: 13px;
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+    }
+    input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid #1f2937;
+      border-radius: 10px;
+      background: #111827;
+      color: #f8fafc;
+      font-size: 15px;
+      transition: border 0.3s, box-shadow 0.3s;
+    }
+    input:focus {
+      outline: none;
+      border-color: #6ee7b7;
+      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 12px 24px rgba(16, 185, 129, 0.25);
+    }
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 16px 32px rgba(16, 185, 129, 0.3);
+    }
+  </style>
+
+</head>
+<body>
+  <div class="card">
+    <h1>Configurar WiFi</h1>
+    <p class="subtitle">Conecta tu ESP32 a tu red. Esta configuracion solo se hace una vez.</p>
+    <form action="/guardar" method="POST">
+      <div class="form-group">
+        <label>SSID (Nombre de la red)</label>
+        <input type="text" name="ssid" placeholder="nombre_red" required>
+      </div>
+      <div class="form-group">
+        <label>Contrasena</label>
+        <input type="password" name="pass" placeholder="contrasena" required>
+      </div>
+      <button type="submit">Conectar</button>
+    </form>
+  </div>
+</body>
+</html>
+)CFGHTML";
+
+const char RESET_HTML[] PROGMEM = R"RSTHTML(
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>CRITICAL ERROR :: RESET</title>
+  <style>
+
+    /*     VARIABLES - paleta rojo alerta */
+    :root {
+      --red:        #ff0033;
+      --red-dim:    #aa0022;
+      --red-glow:   rgba(255, 0, 51, 0.4);
+      --orange:     #ff4400;
+      --bg:         #050000;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--bg);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: 'Share Tech Mono', monospace;
+      overflow: hidden;
+    }
+
+    /*     SCANLINES rojas */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(255, 0, 51, 0.03) 2px,
+        rgba(255, 0, 51, 0.03) 4px
+      );
+      pointer-events: none;
+      z-index: 999;
+    }
+
+    /*   GLITCH DE PÁGINA - franjas rojas y naranja */
+    .page-glitch {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 998;
+    }
+    .page-glitch::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(255, 0, 51, 0.05);
+      animation: page-glitch-red 4s infinite;
+      clip-path: polygon(0 0, 100% 0, 100% 0, 0 0);
+    }
+    .page-glitch::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(255, 68, 0, 0.04);
+      animation: page-glitch-orange 4s infinite;
+      clip-path: polygon(0 0, 100% 0, 100% 0, 0 0);
+    }
+    @keyframes page-glitch-red {
+      0%,85%,100% { clip-path: polygon(0 0,100% 0,100% 0,0 0); transform: translate(0); }
+      86%  { clip-path: polygon(0 10%,100% 10%,100% 18%,0 18%); transform: translate(-5px, 0); }
+      87%  { clip-path: polygon(0 50%,100% 50%,100% 57%,0 57%); transform: translate(5px, 0); }
+      88%  { clip-path: polygon(0 75%,100% 75%,100% 82%,0 82%); transform: translate(-3px, 0); }
+      89%  { clip-path: polygon(0 0,100% 0,100% 0,0 0); transform: translate(0); }
+    }
+    @keyframes page-glitch-orange {
+      0%,87%,100% { clip-path: polygon(0 0,100% 0,100% 0,0 0); transform: translate(0); }
+      88%  { clip-path: polygon(0 35%,100% 35%,100% 42%,0 42%); transform: translate(5px, 0); }
+      89%  { clip-path: polygon(0 60%,100% 60%,100% 68%,0 68%); transform: translate(-4px, 0); }
+      90%  { clip-path: polygon(0 0,100% 0,100% 0,0 0); transform: translate(0); }
+    }
+
+    /*  FLASH DE ALERTA  */
+    .page-flash {
+      position: fixed;
+      inset: 0;
+      background: rgba(255, 0, 51, 0.04);
+      pointer-events: none;
+      z-index: 997;
+      animation: alert-flash 4s infinite;
+    }
+    @keyframes alert-flash {
+      0%,90%,100% { opacity: 0; }
+      91% { opacity: 1; }
+      92% { opacity: 0; }
+      93% { opacity: 0.7; }
+      94% { opacity: 0; }
+      95% { opacity: 0.4; }
+      96% { opacity: 0; }
+    }
+
+    /*  fondo  */
+    .card {
+      position: relative;
+      z-index: 10;
+      background: #0a0000ee;
+      border: 1px solid rgba(255, 0, 51, 0.5);
+      border-radius: 4px;
+      padding: 45px 40px;
+      width: 90%;
+      max-width: 440px;
+      text-align: center;
+      color: white;
+      box-shadow:
+        0 0 30px rgba(255, 0, 51, 0.2),
+        0 0 80px rgba(255, 0, 51, 0.05),
+        inset 0 0 30px rgba(255, 0, 51, 0.03);
+    }
+
+    /* Esquinas en rojo */
+    .card::before, .card::after {
+      content: '';
+      position: absolute;
+      width: 18px; height: 18px;
+      border-color: var(--red);
+      border-style: solid;
+    }
+    .card::before { top: -1px; left: -1px; border-width: 2px 0 0 2px; }
+    .card::after  { bottom: -1px; right: -1px; border-width: 0 2px 2px 0; }
+
+    /* ICONO DE ALERTA */
+    .alert-icon {
+      font-size: 55px;
+      margin-bottom: 20px;
+      display: block;
+      animation: icon-pulse 1s ease-in-out infinite;
+      filter: drop-shadow(0 0 15px var(--red));
+    }
+    @keyframes icon-pulse {
+      0%,100% { transform: scale(1);    filter: drop-shadow(0 0 10px var(--red)); }
+      50%      { transform: scale(1.1); filter: drop-shadow(0 0 25px var(--red)); }
+    }
+
+    /* ETIQUETA DE ESTADO */
+    .status-tag {
+      font-size: 11px;
+      color: var(--red);
+      letter-spacing: 4px;
+      margin-bottom: 15px;
+      opacity: 0.8;
+      animation: blink-tag 1.5s step-end infinite;
+    }
+    @keyframes blink-tag {
+      0%,100% { opacity: 0.8; }
+      50%      { opacity: 0.2; }
+    }
+
+    /* TÍTULO CON GLITCH ROJO */
+    .glitch {
+      font-family: 'Orbitron', monospace;
+      font-size: 20px;
+      color: var(--red);
+      text-transform: uppercase;
+      letter-spacing: 4px;
+      position: relative;
+      text-shadow: 0 0 10px var(--red), 0 0 30px var(--red-glow);
+      animation: flicker 3s infinite;
+      margin-bottom: 10px;
+    }
+    .glitch::before, .glitch::after {
+      content: attr(data-text);
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%;
+    }
+    .glitch::before {
+      color: #ff6600;
+      animation: glitch-1 3s infinite;
+      clip-path: polygon(0 0, 100% 0, 100% 40%, 0 40%);
+    }
+    .glitch::after {
+      color: #ff0080;
+      animation: glitch-2 3s infinite;
+      clip-path: polygon(0 60%, 100% 60%, 100% 100%, 0 100%);
+    }
+    @keyframes glitch-1 {
+      0%,92%,100% { transform: translate(0); opacity: 0; }
+      93% { transform: translate(-4px, 1px); opacity: 0.9; }
+      95% { transform: translate(4px, -1px); opacity: 0.9; }
+    }
+    @keyframes glitch-2 {
+      0%,93%,100% { transform: translate(0); opacity: 0; }
+      94% { transform: translate(4px, 2px); opacity: 0.9; }
+      96% { transform: translate(-4px, -2px); opacity: 0.9; }
+    }
+    @keyframes flicker {
+      0%,93%,100% { opacity: 1; }
+      94% { opacity: 0.5; }
+      95% { opacity: 1; }
+      96% { opacity: 0.3; }
+      97% { opacity: 1; }
+    }
+
+    /* Subtítulo */
+    .subtitle {
+      font-size: 13px;
+      color: rgba(255, 0, 51, 0.6);
+      margin-bottom: 30px;
+      letter-spacing: 1px;
+    }
+
+    /* BARRA DE PROGRESO */
+    .progress-label {
+      font-size: 10px;
+      color: rgba(255, 0, 51, 0.5);
+      letter-spacing: 2px;
+      margin-bottom: 8px;
+      text-align: left;
+    }
+    .progress-wrap {
+      background: rgba(255, 0, 51, 0.1);
+      border: 1px solid rgba(255, 0, 51, 0.2);
+      border-radius: 2px;
+      height: 8px;
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      border-radius: 2px;
+      background: linear-gradient(90deg, var(--red-dim), var(--red), var(--orange));
+      animation: fill-bar 5s linear forwards;
+      box-shadow: 0 0 10px var(--red), 0 0 20px var(--red-glow);
+    }
+    @keyframes fill-bar {
+      0%   { width: 0%; }
+      100% { width: 100%; }
+    }
+
+    /* NOTA FINAL */
+    .note {
+      font-size: 11px;
+      color: rgba(255, 0, 51, 0.35);
+      letter-spacing: 2px;
+    }
+
+    /* FOOTER */
+    .footer {
+      margin-top: 25px;
+      font-size: 10px;
+      letter-spacing: 2px;
+    }
+    .footer span { color: var(--red); opacity: 0.5; }
+
+  </style>
+</head>
+<body>
+
+  <!-- CAPAS DE GLITCH -->
+  <div class="page-glitch"></div>
+  <div class="page-flash"></div>
+
+  <!-- TARJETA DE ERROR -->
+  <div class="card">
+
+    <!-- Icono y etiqueta de estado -->
+    <span class="alert-icon">⚠️</span>
+    <p class="status-tag">[ ERROR CRÍTICO :: SISTEMA ]</p>
+
+    <!-- Título con glitch -->
+    <h1 class="glitch" data-text="WIFI ELIMINADO">WIFI ELIMINADO</h1>
+    <p class="subtitle">// Reiniciando dispositivo...</p>
+
+    <!-- Barra de progreso que se llena en 5s -->
+    <p class="progress-label">// REINICIANDO_SISTEMA.exe</p>
+    <div class="progress-wrap">
+      <div class="progress-bar"></div>
+    </div>
+
+    <p class="note">Serás redirigido automáticamente</p>
+
+    <!-- Footer -->
+    <div class="footer">
+      <span>© 2026 :: Proyecto Ing. Software :: ESP32</span>
+    </div>
+
+  </div>
+
+  <!-- Redirección después de 5 segundos -->
+  <script>
+    setTimeout(() => {
+      window.location.href = '/';
+    }, 5000); // 5 segundos
+  </script>
+
+</body>
+</html>
+)RSTHTML";
+
+const char INIT_HTML[] PROGMEM = R"INITHTML(
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EcoSolar</title>
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Manrope", "Segoe UI", sans-serif;
+}
+:root {
+  --bg: #f4f7fb;
+  --panel: #ffffff;
+  --ink: #0f172a;
+  --muted: #64748b;
+  --line: #e2e8f0;
+  --sun: #f59e0b;
+  --leaf: #22c55e;
+  --sky: #38bdf8;
+  --shadow: 0 20px 60px rgba(15, 23, 42, 0.08);
+}
+.sidebar-footer { padding: 0 16px 24px; }
+.status-badge-center { justify-content: center; }
+.progress-fill-76 { width: 76%; }
+.toggle-knob-off { transform: translateX(0); }
+.card-title-mb16 { margin-bottom: 16px; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  min-height: 100vh;
+}
+.page {
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+}
+.page::before {
+  content: "";
+  position: absolute;
+  width: 540px;
+  height: 540px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(56, 189, 248, 0.22), transparent 65%);
+  top: -180px;
+  right: -180px;
+  z-index: 0;
+}
+.page::after {
+  content: "";
+  position: absolute;
+  width: 520px;
+  height: 520px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(34, 197, 94, 0.18), transparent 70%);
+  bottom: -220px;
+  left: -180px;
+  z-index: 0;
+}
+.dashboard-container {
+  display: flex;
+  min-height: 100vh;
+  position: relative;
+  z-index: 1;
+}
+.sidebar {
+  width: 250px;
+  background: rgba(255, 255, 255, 0.75);
+  border-right: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  transition: transform 0.35s ease, box-shadow 0.35s ease;
+  will-change: transform;
+  position: relative;
+}
+@media (min-width: 769px) {
+  .sidebar {
+    transform: translateX(-210px);
+    box-shadow: 12px 0 24px rgba(15, 23, 42, 0.12);
+  }
+  .sidebar:hover,
+  .sidebar:focus-within {
+    transform: translateX(0);
+    box-shadow: 12px 0 30px rgba(15, 23, 42, 0.18);
+  }
+}
+
+.nav-menu {
+  flex: 1;
+  padding: 10px 16px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.nav-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #334155;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 15px;
+}
+.nav-item:hover { background: #f1f5f9; }
+.nav-item.active {
+  background: #e0f2fe;
+  border-color: #bae6fd;
+  color: #0f172a;
+}
+.nav-icon { width: 20px; height: 20px; }
+.main-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px 28px 40px;
+}
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  width: 100%;
+}
+.header-title h1 {
+  font-size: 28px;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 6px;
+}
+.header-title p { color: var(--muted); font-size: 14px; }
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.role-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: rgba(56, 189, 248, 0.1);
+  border-radius: 6px;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+}
+.role-indicator {
+  font-size: 12px;
+  font-weight: 600;
+  color: #38bdf8;
+}
+.btn-config-danger {
+  width: 100%;
+  padding: 12px 16px;
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+.btn-config-danger:hover {
+  background: #dc2626;
+  box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4);
+  transform: translateY(-2px);
+}
+.btn-config-danger:active {
+  transform: translateY(0);
+}
+.config-item-danger {
+  border-top: 1px solid #fee2e2;
+  padding-top: 12px;
+  margin-top: 12px;
+}
+.pill-danger {
+  background: #ef4444 !important;
+  color: white !important;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.pill-danger:hover {
+  background: #dc2626 !important;
+  transform: scale(1.05);
+}
+.weather-pill {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  border-radius: 999px;
+  font-weight: 600;
+  color: #9a3412;
+}
+.weather-pill span { font-size: 13px; color: #9a3412; font-weight: 600; }
+.date-time { text-align: right; }
+.date {
+  font-size: 12px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+.time { font-size: 18px; font-weight: 700; color: #0f172a; }
+.status-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: #dcfce7;
+  border: 1px solid #bbf7d0;
+  border-radius: 999px;
+}
+.status-dot {
+  width: 8px;
+  height: 8px;
+  background: #16a34a;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.85); }
+}
+.status-text { font-size: 14px; font-weight: 600; color: #15803d; }
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+  gap: 24px;
+  margin-bottom: 24px;
+}
+.card {
+  background: var(--panel);
+  border-radius: 18px;
+  padding: 24px;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--line);
+}
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.card-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: #0f172a;
+}
+.card-icon.sun { background: #fff7ed; }
+.card-icon.green { background: #dcfce7; }
+.card-icon.blue { background: #e0f2fe; }
+.card-title { font-size: 18px; font-weight: 700; color: #0f172a; }
+.card-value {
+  font-size: 40px;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 6px;
+}
+.card-subtitle { font-size: 14px; color: var(--muted); margin-bottom: 18px; }
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: #dcfce7;
+  border: 1px solid #bbf7d0;
+  color: #166534;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+.status-pill .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #22c55e;
+}
+
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.stat-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.stat-card .label { font-size: 12px; color: var(--muted); font-weight: 600; }
+.stat-card .value { font-size: 16px; font-weight: 700; color: #0f172a; }
+
+.card-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+.stat-item { display: flex; flex-direction: column; }
+.stat-label { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+.stat-value { font-size: 14px; font-weight: 700; color: #0f172a; }
+.progress-bar {
+  width: 100%;
+  height: 12px;
+  background: #e2e8f0;
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #22c55e, #15803d);
+  transition: width 0.5s ease;
+  border-radius: 999px;
+}
+.battery-tip {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 12px;
+  font-size: 12px;
+  color: #475569;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin-top: 12px;
+}
+.battery-tip strong { color: #0f172a; }
+.luces-list { display: flex; flex-direction: column; gap: 12px; }
+.luz-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+.luz-left { display: flex; align-items: center; gap: 12px; }
+.luz-number {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 14px;
+  color: white;
+  transition: all 0.3s;
+}
+.luz-number.on { background: #16a34a; }
+.luz-number.off { background: #94a3b8; }
+.luz-details { display: flex; flex-direction: column; gap: 4px; }
+.luz-name { font-weight: 700; color: #0f172a; font-size: 14px; }
+.luz-status {
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  display: inline-block;
+  width: fit-content;
+}
+.luz-status.on { background: rgba(34, 197, 94, 0.2); color: #15803d; }
+.luz-status.off { background: rgba(148, 163, 184, 0.25); color: #475569; }
+.toggle-switch {
+  position: relative;
+  width: 56px;
+  height: 28px;
+  background: #e2e8f0;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.4s ease;
+}
+.toggle-switch.on {
+  background: rgba(34, 197, 94, 0.8);
+  box-shadow: 0 8px 16px rgba(34, 197, 94, 0.2);
+}
+.toggle-knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 24px;
+  height: 24px;
+  background: white;
+  border-radius: 50%;
+  transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transform: translateX(0);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+.toggle-switch.on .toggle-knob {
+  transform: translateX(28px);
+}
+.card.full-width { grid-column: 1 / -1; }
+.secondary-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; }
+.summary-list { display: flex; flex-direction: column; gap: 12px; }
+.summary-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  font-size: 14px;
+}
+.summary-item strong { color: #0f172a; }
+.personal-note {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #ecfeff;
+  border: 1px solid #cffafe;
+  font-size: 13px;
+  color: #0f172a;
+}
+.page-section { display: none; }
+.page-section.active { display: block; }
+.section-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+}
+.history-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.6fr) minmax(0, 1.4fr);
+  gap: 24px;
+}
+.alert-list { display: flex; flex-direction: column; gap: 12px; }
+.alert-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  font-size: 14px;
+}
+.alert-badge {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.alert-badge.ok { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+.alert-badge.warn { background: #fff7ed; color: #9a3412; border: 1px solid #fed7aa; }
+.alert-badge.crit { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+.config-list { display: flex; flex-direction: column; gap: 12px; }
+.config-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  font-size: 14px;
+}
+.toggle-pill {
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  background: #e0f2fe;
+  color: #0f172a;
+  border: 1px solid #bae6fd;
+}
+.footer { text-align: center; padding: 24px 0 0; color: #64748b; font-size: 13px; }
+@media (max-width: 1024px) {
+  .dashboard-grid { grid-template-columns: 1fr; }
+  .secondary-grid { grid-template-columns: 1fr; }
+  .history-grid { grid-template-columns: 1fr; }
+
+}
+@media (max-width: 420px) {
+  .main-content { padding: 14px; }
+  .card { padding: 18px; }
+  .card-header { margin-bottom: 12px; }
+  .card-title { font-size: 16px; }
+  .card-subtitle { font-size: 13px; }
+
+}
+@media (max-width: 768px) {
+  .sidebar { width: 80px; }
+  .nav-item span { display: none; }
+  .nav-item { justify-content: center; }
+  .main-content { padding: 16px; }
+  .header-content { flex-direction: column; align-items: flex-start; }
+  .header-right { width: 100%; justify-content: space-between; flex-wrap: wrap; }
+}
+</style>
+
+</head>
+<body>
+<div class="page">
+<div class="dashboard-container">
+  <div class="sidebar">
+
+    <nav class="nav-menu">
+      <button class="nav-item active" data-page="home">
+        <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+        </svg>
+        <span>Inicio</span>
+      </button>
+
+      <button class="nav-item" data-page="configuracion">
+        <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z"/>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
+        </svg>
+        <span>Configuracion</span>
+      </button>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="status-badge status-badge-center">
+        <div class="status-dot"></div>
+        <span class="status-text">Sistema conectado</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="main-content">
+    <div class="header">
+      <div class="header-content">
+        <div class="header-title">
+          <h1>EcoSolar</h1>
+          <p>Monitoreo solar en tiempo real</p>
+        </div>
+        <div class="header-right">
+          <div class="role-badge" id="role-badge">
+            <span class="role-indicator">Casa</span>
+          </div>
+          <div class="date-time">
+            <div class="date" id="current-date">13 MAY</div>
+            <div class="time" id="current-time">10:24</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-section active" id="page-home">
+      <div class="dashboard-grid">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">Panel Solar</h2>
+              <div class="card-subtitle">Estado actual</div>
+            </div>
+          </div>
+          <div>
+            <span class="status-pill"><span class="dot"></span> Conectado</span>
+            <div class="card-value">1245 W</div>
+            <div class="card-subtitle">Potencia en tiempo real</div>
+          </div>
+          <div class="stats-row">
+            <div class="stat-card">
+              <div class="label">Energia hoy</div>
+              <div class="value">5.68 kWh</div>
+            </div>
+            <div class="stat-card">
+              <div class="label">Energia este mes</div>
+              <div class="value">28.45 kWh</div>
+            </div>
+            <div class="stat-card">
+              <div class="label">Voltaje actual</div>
+              <div class="value">23.5 V</div>
+            </div>
+            <div class="stat-card">
+              <div class="label">Potencia actual</div>
+              <div class="value">1245 W</div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">Bateria</h2>
+              <div class="card-subtitle">Estado actual</div>
+            </div>
+          </div>
+          <div>
+            <span class="status-pill"><span class="dot"></span> Cargando</span>
+            <div class="card-value">76%</div>
+            <div class="card-subtitle">Nivel de carga</div>
+            <div class="progress-bar">
+              <div class="progress-fill progress-fill-76"></div>
+            </div>
+          </div>
+          <div class="card-stats">
+            <div class="stat-item">
+              <span class="stat-label">Voltaje</span>
+              <span class="stat-value">12.2 V</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Tiempo para 100%</span>
+              <span class="stat-value">1h 45m</span>
+            </div>
+          </div>
+          <div class="battery-tip"><strong>Nota solar:</strong> la bateria se esta cargando con energia limpia.</div>
+        </div>
+      </div>
+      <div class="secondary-grid">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Luces</h2>
+          </div>
+          <div class="luces-list">
+            <div class="luz-item">
+              <div class="luz-left">
+                <div class="luz-number on">1</div>
+                <div class="luz-details">
+                  <div class="luz-name">Luz 1</div>
+                  <span class="luz-status on">ENCENDIDA</span>
+                </div>
+              </div>
+              <div class="toggle-switch on"><div class="toggle-knob"></div></div>
+            </div>
+            <div class="luz-item">
+              <div class="luz-left">
+                <div class="luz-number off">2</div>
+                <div class="luz-details">
+                  <div class="luz-name">Luz 2</div>
+                  <span class="luz-status off">APAGADA</span>
+                </div>
+              </div>
+              <div class="toggle-switch"><div class="toggle-knob toggle-knob-off"></div></div>
+            </div>
+            <div class="luz-item">
+              <div class="luz-left">
+                <div class="luz-number on">3</div>
+                <div class="luz-details">
+                  <div class="luz-name">Luz 3</div>
+                  <span class="luz-status on">ENCENDIDA</span>
+                </div>
+              </div>
+              <div class="toggle-switch on"><div class="toggle-knob"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-section" id="page-panel">
+      <div class="section-grid">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">Panel Solar</h2>
+              <div class="card-subtitle">Lecturas detalladas</div>
+            </div>
+          </div>
+          <div class="stats-row">
+            <div class="stat-card"><div class="label">Voltaje actual</div><div class="value">23.5 V</div></div>
+            <div class="stat-card"><div class="label">Potencia actual</div><div class="value">1245 W</div></div>
+            <div class="stat-card"><div class="label">Eficiencia</div><div class="value">96%</div></div>
+            <div class="stat-card"><div class="label">Irradiancia</div><div class="value">720 W/m2</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">Produccion</h2>
+              <div class="card-subtitle">Comparativo semanal</div>
+            </div>
+          </div>
+          <div class="stats-row">
+            <div class="stat-card"><div class="label">Hoy</div><div class="value">5.68 kWh</div></div>
+            <div class="stat-card"><div class="label">Promedio semanal</div><div class="value">4.92 kWh</div></div>
+            <div class="stat-card"><div class="label">Record diario</div><div class="value">6.3 kWh</div></div>
+            <div class="stat-card"><div class="label">Factor clima</div><div class="value">Alto</div></div>
+          </div>
+          <div class="personal-note">Tip personal: revisa la inclinacion del panel si el promedio baja 3 dias seguidos.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-section" id="page-bateria">
+      <div class="section-grid">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">Estado de bateria</h2>
+              <div class="card-subtitle">Salud y autonomia</div>
+            </div>
+          </div>
+          <div>
+            <span class="status-pill"><span class="dot"></span> Salud optima</span>
+            <div class="card-value">76%</div>
+            <div class="card-subtitle">Nivel de carga</div>
+            <div class="progress-bar">
+              <div class="progress-fill progress-fill-76"></div>
+            </div>
+          </div>
+          <div class="card-stats">
+            <div class="stat-item"><span class="stat-label">Voltaje</span><span class="stat-value">12.2 V</span></div>
+            <div class="stat-item"><span class="stat-label">Autonomia</span><span class="stat-value">1h 45m</span></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">Ciclos y cuidados</h2>
+              <div class="card-subtitle">Indicadores clave</div>
+            </div>
+          </div>
+          <div class="summary-list">
+            <div class="summary-item"><strong>Ciclos estimados</strong> <span>214</span></div>
+            <div class="summary-item"><strong>Temperatura</strong> <span>28 C</span></div>
+            <div class="summary-item"><strong>Profundidad descarga</strong> <span>42%</span></div>
+            <div class="summary-item"><strong>Estado</strong> <span>Estable</span></div>
+          </div>
+          <div class="personal-note">Tip personal: evita bajar del 20% para alargar la vida util.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-section" id="page-historial">
+      <div class="history-grid">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">Resumen 30 dias</h2>
+              <div class="card-subtitle">Datos simulados</div>
+            </div>
+          </div>
+          <div class="summary-list">
+            <div class="summary-item"><strong>Energia total</strong> <span id="hist-total">142.5 kWh</span></div>
+            <div class="summary-item"><strong>Promedio diario</strong> <span id="hist-promedio">4.8 kWh</span></div>
+            <div class="summary-item"><strong>Max diario</strong> <span id="hist-max">6.3 kWh</span></div>
+            <div class="summary-item"><strong>Min diario</strong> <span id="hist-min">2.9 kWh</span></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">Produccion diaria</h2>
+              <div class="card-subtitle">Ultimos 30 dias</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-section" id="page-alertas">
+      <div class="section-grid">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">Alertas del sistema</h2>
+              <div class="card-subtitle">Estado en tiempo real</div>
+            </div>
+          </div>
+          <div class="alert-list">
+            <div class="alert-item"><span>Conexión ESP32</span><span class="alert-badge" id="alert-conexion">OK</span></div>
+            <div class="alert-item"><span>Voltaje bateria</span><span class="alert-badge" id="alert-voltaje">OK</span></div>
+            <div class="alert-item"><span>Nivel de carga bateria</span><span class="alert-badge" id="alert-carga">OK</span></div>
+            <div class="alert-item"><span>Producción panel solar</span><span class="alert-badge" id="alert-panel">OK</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-section" id="page-configuracion">
+      <div class="section-grid">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">Configuracion</h2>
+              <div class="card-subtitle">Ajustes rapidos</div>
+            </div>
+          </div>
+          <div class="config-list">
+            <div class="config-item"><span>Modo ahorro nocturno</span><span class="toggle-pill">Activo</span></div>
+            <div class="config-item"><span>Calibracion automatica</span><span class="toggle-pill">Manual</span></div>
+            <div class="config-item config-item-danger">
+              <span>Eliminar conexión WiFi</span>
+              <button id="btn-eliminar-wifi" class="toggle-pill pill-danger">Eliminar</button>
+            </div>
+          </div>
+      </div>
+    </div>
+
+    <div class="footer">Dashboard Solar ESP32</div>
+  </div>
+</div>
+</div>
+
+<script>
+
+const UPDATE_INTERVAL = 1000;
+let systemStatus = {
+  panelPower: 0, batteryLevel: 0, batteryVoltage: 0,
+  energyToday: 0, energyMonth: 0,
+  luces: [{id:1,state:false},{id:2,state:false},{id:3,state:false}],
+  connected: false
+};
+// ACTUALIZACIÓN DE HORA
+function updateTime() {
+  const now = new Date();
+  
+  // Actualizar hora (HH:MM:SS)
+  const hours = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  const seconds = String(now.getSeconds()).padStart(2, '0');
+  const timeStr = `${hours}:${minutes}:${seconds}`;
+  
+  // Actualizar fecha (DD MON)
+  const days = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+  const date = String(now.getDate()).padStart(2, '0');
+  const month = days[now.getMonth()];
+  const dateStr = `${date} ${month}`;
+  
+  const timeElement = document.getElementById('current-time');
+  const dateElement = document.getElementById('current-date');
+  
+  if (timeElement) timeElement.textContent = timeStr;
+  if (dateElement) dateElement.textContent = dateStr;
+}
+
+// Obtener datos del ESP32
+async function fetchSystemData() {
+  try {
+    const response = await fetch('/api/datos', {
+      method: 'GET'
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      systemStatus.panelPower = data.panelPower || 0;
+      systemStatus.batteryLevel = data.batteryLevel || 0;
+      systemStatus.batteryVoltage = data.batteryVoltage || 0;
+      systemStatus.energyToday = data.energyToday || 0;
+      systemStatus.energyMonth = data.energyMonth || 0;
+      if (data.luz1 !== undefined) systemStatus.luces[0].state = data.luz1;
+      if (data.luz2 !== undefined) systemStatus.luces[1].state = data.luz2;
+      if (data.luz3 !== undefined) systemStatus.luces[2].state = data.luz3;
+      systemStatus.connected = true;
+      updateUI();
+    } else {
+      resetToZero();
+    }
+  } catch (error) {
+    console.log('ESP32 no disponible, mostrando 0');
+    resetToZero();
+  }
+}
+
+// Resetear valores a 0 si no hay conexión
+function resetToZero() {
+  systemStatus = {
+    panelPower: 0,
+    batteryLevel: 0,
+    batteryVoltage: 0,
+    energyToday: 0,
+    energyMonth: 0,
+    luces: [
+      { id: 1, state: false },
+      { id: 2, state: false },
+      { id: 3, state: false }
+    ],
+    connected: false
+  };
+  updateUI();
+}
+
+// Actualizar interfaz con datos actuales
+function updateUI() {
+  // Actualizar estado de conexión
+  const statusText = document.querySelector('.status-text');
+  if (statusText) {
+    statusText.textContent = systemStatus.connected ? 'Sistema conectado' : 'Sistema desconectado';
+  }
+  
+  // ACTUALIZAR - Panel Solar
+  const homeSection = document.getElementById('page-home');
+  if (homeSection) {
+    const panelCards = homeSection.querySelectorAll('.card-value');
+    if (panelCards.length >= 1) {
+      panelCards[0].textContent = systemStatus.panelPower + ' W';
+    }
+    
+    // Actualizar status pill del panel
+    const statusPills = homeSection.querySelectorAll('.status-pill');
+    if (statusPills.length >= 1) {
+      statusPills[0].innerHTML = systemStatus.connected ? '<span class="dot"></span> Conectado' : '<span class="dot"></span> Desconectado';
+    }
+    
+    const panelStats = homeSection.querySelectorAll('.stat-card .value');
+    if (panelStats.length >= 4) {
+      panelStats[0].textContent = systemStatus.energyToday.toFixed(2) + ' kWh';
+      panelStats[1].textContent = systemStatus.energyMonth.toFixed(2) + ' kWh';
+      panelStats[2].textContent = systemStatus.connected ? '23.5 V' : '0.0 V'; // Voltaje actual
+      panelStats[3].textContent = systemStatus.panelPower + ' W';
+    }
+  }
+  
+  // ACTUALIZAR BATERÍA
+  const batterySection = document.querySelectorAll('.card');
+  batterySection.forEach(card => {
+    const values = card.querySelectorAll('.card-value');
+    if (values.length > 0 && values[0].textContent.includes('%')) {
+      values[0].textContent = systemStatus.batteryLevel + '%';
+      
+      const progressFill = card.querySelector('.progress-fill');
+      if (progressFill) {
+        progressFill.style.width = systemStatus.batteryLevel + '%';
+      }
+      
+      // Actualizar status pill de batería
+      const batteryStatusPills = card.querySelectorAll('.status-pill');
+      if (batteryStatusPills.length >= 1) {
+        batteryStatusPills[0].innerHTML = systemStatus.connected ? '<span class="dot"></span> Cargando' : '<span class="dot"></span> Desconectado';
+      }
+      
+      const stats = card.querySelectorAll('.stat-value');
+      if (stats.length > 0) {
+        stats[0].textContent = systemStatus.batteryVoltage.toFixed(1) + ' V';
+      }
+    }
+  });
+  
+  // ACTUALIZAR PANEL SOLAR DETALLADO
+  const panelPage = document.getElementById('page-panel');
+  if (panelPage) {
+    const panelStats = panelPage.querySelectorAll('.stat-card .value');
+    if (panelStats.length >= 4) {
+      panelStats[0].textContent = systemStatus.connected ? '23.5 V' : '0.0 V'; // Voltaje actual
+      panelStats[1].textContent = systemStatus.panelPower + ' W';
+      panelStats[2].textContent = systemStatus.connected ? '96%' : '0%'; // Eficiencia
+      panelStats[3].textContent = systemStatus.connected ? '720 W/m2' : '0 W/m2'; // Irradiancia
+    }
+    
+    // Actualizar sección de Producción
+    const productionCards = panelPage.querySelectorAll('.card');
+    if (productionCards.length >= 2) {
+      const productionStats = productionCards[1].querySelectorAll('.stat-card .value');
+      if (productionStats.length >= 4) {
+        productionStats[0].textContent = systemStatus.connected ? '5.68 kWh' : '0.00 kWh'; // Hoy
+        productionStats[1].textContent = systemStatus.connected ? '4.92 kWh' : '0.00 kWh'; // Promedio semanal
+        productionStats[2].textContent = systemStatus.connected ? '6.3 kWh' : '0.00 kWh'; // Record diario
+        productionStats[3].textContent = systemStatus.connected ? 'Alto' : 'No disponible'; // Factor clima
+      }
+    }
+  }
+  
+  // ACTUALIZAR BATERÍA - Ciclos y cuidados
+  const bateriaPage = document.getElementById('page-bateria');
+  if (bateriaPage) {
+    // Buscar directamente el segundo card en page-bateria (Ciclos y cuidados)
+    const cards = bateriaPage.querySelectorAll('.card');
+    if (cards.length >= 2) {
+      const cycleCard = cards[1]; // Segundo card = "Ciclos y cuidados"
+      const cycleItems = cycleCard.querySelectorAll('.summary-item');
+      if (cycleItems.length >= 4) {
+        cycleItems[0].querySelector('span').textContent = systemStatus.connected ? '214' : '--'; // Ciclos estimados
+        cycleItems[1].querySelector('span').textContent = systemStatus.connected ? '28°C' : '--'; // Temperatura
+        cycleItems[2].querySelector('span').textContent = systemStatus.connected ? '42%' : '--'; // Profundidad descarga
+        cycleItems[3].querySelector('span').textContent = systemStatus.connected ? 'Estable' : 'Esperando datos'; // Estado
+      }
+    }
+  }
+  
+  // ACTUALIZAR HISTORIAL
+  document.getElementById('hist-total') && (document.getElementById('hist-total').textContent = systemStatus.energyMonth.toFixed(2) + ' kWh');
+  document.getElementById('hist-promedio') && (document.getElementById('hist-promedio').textContent = (systemStatus.energyMonth / 30).toFixed(2) + ' kWh');
+  
+  // ACTUALIZAR ALERTAS EN TIEMPO REAL
+  updateAlertas();
+
+  // Actualizar luces
+  updateLuces();
+  
+  // Indicador de conexión
+  const statusDot = document.querySelector('.status-dot');
+  if (statusDot) {
+    statusDot.style.background = systemStatus.connected ? '#16a34a' : '#ef4444';
+  }
+}
+
+// Actualizar alertas en tiempo real
+function updateAlertas() {
+  // Alert 1: Conexión ESP32
+  const alertConexion = document.getElementById('alert-conexion');
+  if (alertConexion) {
+    alertConexion.className = 'alert-badge';
+    if (systemStatus.connected) {
+      alertConexion.classList.add('ok');
+      alertConexion.textContent = 'OK';
+    } else {
+      alertConexion.classList.add('crit');
+      alertConexion.textContent = 'Critico';
+    }
+  }
+  
+  // Alert 2: Voltaje bateria
+  const alertVoltaje = document.getElementById('alert-voltaje');
+  if (alertVoltaje) {
+    alertVoltaje.className = 'alert-badge';
+    if (!systemStatus.connected) {
+      alertVoltaje.classList.add('warn');
+      alertVoltaje.textContent = 'N/A';
+    } else if (systemStatus.batteryVoltage >= 12 && systemStatus.batteryVoltage <= 13.5) {
+      alertVoltaje.classList.add('ok');
+      alertVoltaje.textContent = 'OK';
+    } else if (systemStatus.batteryVoltage < 12) {
+      alertVoltaje.classList.add('crit');
+      alertVoltaje.textContent = 'Critico';
+    } else {
+      alertVoltaje.classList.add('warn');
+      alertVoltaje.textContent = 'Aviso';
+    }
+  }
+  
+  // Alert 3: Nivel de carga bateria
+  const alertCarga = document.getElementById('alert-carga');
+  if (alertCarga) {
+    alertCarga.className = 'alert-badge';
+    if (!systemStatus.connected) {
+      alertCarga.classList.add('warn');
+      alertCarga.textContent = 'N/A';
+    } else if (systemStatus.batteryLevel >= 30) {
+      alertCarga.classList.add('ok');
+      alertCarga.textContent = 'OK';
+    } else if (systemStatus.batteryLevel >= 15) {
+      alertCarga.classList.add('warn');
+      alertCarga.textContent = 'Aviso';
+    } else {
+      alertCarga.classList.add('crit');
+      alertCarga.textContent = 'Critico';
+    }
+  }
+  
+  // Alert 4: Producción panel solar
+  const alertPanel = document.getElementById('alert-panel');
+  if (alertPanel) {
+    alertPanel.className = 'alert-badge';
+    if (!systemStatus.connected) {
+      alertPanel.classList.add('warn');
+      alertPanel.textContent = 'N/A';
+    } else if (systemStatus.panelPower > 500) {
+      alertPanel.classList.add('ok');
+      alertPanel.textContent = 'OK';
+    } else if (systemStatus.panelPower > 100) {
+      alertPanel.classList.add('warn');
+      alertPanel.textContent = 'Aviso';
+    } else {
+      alertPanel.classList.add('warn');
+      alertPanel.textContent = 'Bajo';
+    }
+  }
+}
+
+// Actualizar estado de las luces
+function updateLuces() {
+  const items = document.querySelectorAll('.luz-item');
+  items.forEach((item, index) => {
+    const luz = systemStatus.luces[index];
+    if (!luz) return;
+    
+    const toggle = item.querySelector('.toggle-switch');
+    const number = item.querySelector('.luz-number');
+    const status = item.querySelector('.luz-status');
+    
+    if (luz.state) {
+      toggle.classList.add('on');
+      number.classList.remove('off');
+      number.classList.add('on');
+      status.classList.remove('off');
+      status.classList.add('on');
+      status.textContent = 'ENCENDIDA';
+    } else {
+      toggle.classList.remove('on');
+      number.classList.add('off');
+      number.classList.remove('on');
+      status.classList.add('off');
+      status.classList.remove('on');
+      status.textContent = 'APAGADA';
+    }
+  });
+}
+
+// Controlar luces
+async function toggleLuz(id) {
+  try {
+    const response = await fetch(`/api/luz/${id}/toggle`, {
+      method: 'POST'
+    });
+    
+    if (response.ok) {
+      // Actualizar estado local
+      const luz = systemStatus.luces.find(l => l.id === id);
+      if (luz) {
+        luz.state = !luz.state;
+        updateUI();
+      }
+    }
+  } catch (error) {
+    console.error('Error al controlar luz:', error);
+  }
+}
+
+// Agregar event listeners a los botones toggle
+function setupLuzControls() {
+  const items = document.querySelectorAll('.luz-item');
+  items.forEach((item, index) => {
+    const toggle = item.querySelector('.toggle-switch');
+    toggle.addEventListener('click', () => {
+      toggleLuz(index + 1);
+    });
+  });
+}
+
+// Navegación de secciones
+function mostrarSeccion(id) {
+  document.querySelectorAll('.page-section').forEach(section => {
+    section.classList.remove('active');
+  });
+  const target = document.getElementById('page-' + id);
+  if (target) target.classList.add('active');
+}
+
+// Inicialización
+document.addEventListener('DOMContentLoaded', () => {
+  // Actualizar hora inmediatamente
+  updateTime();
+  
+  // Primero, mostrar todo en 0
+  updateUI();
+  
+  // Setup navegación
+  document.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('click', function() {
+      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+      this.classList.add('active');
+      const pageId = this.getAttribute('data-page');
+      if (pageId) mostrarSeccion(pageId);
+    });
+  });
+  
+  // Setup controles de luces
+  setupLuzControls();
+  
+  // Intentar conectar al ESP32
+  fetchSystemData();
+  
+  // Actualizar datos cada segundo
+  setInterval(() => {
+    updateTime();
+    fetchSystemData();
+  }, UPDATE_INTERVAL);
+
+  // Rol del usuario
+  const roleIndicator = document.querySelector('.role-indicator');
+  if (roleIndicator) roleIndicator.textContent = 'Casa';
+
+  // Botón eliminar WiFi
+  const btnWifi = document.getElementById('btn-eliminar-wifi');
+  if (btnWifi) {
+    btnWifi.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (confirm('¿Eliminar la conexión WiFi del ESP32?')) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/api/forget-wifi';
+        document.body.appendChild(form);
+        form.submit();
+      }
+    });
+  }
+});
+</script>
+</body>
+</html>
+)INITHTML";

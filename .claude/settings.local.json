@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell($f = Get-Item \"c:\\\\Users\\\\PHOENIX\\\\Desktop\\\\Pag Domotica\\\\2. Pag proncipal\\\\Inicio.html\"; Write-Host \"$\\($f.Name\\): $\\([math]::Round\\($f.Length/1KB, 1\\)\\) KB \\($\\($f.Length\\) bytes\\)\")",
+      "PowerShell(Get-ChildItem -Path 'c:\\\\Users\\\\PHOENIX\\\\Desktop\\\\Pag Domotica\\\\' -Recurse -Force | Select-Object -Property FullName | ForEach-Object { $_.FullName } | Sort-Object)",
+      "PowerShell($lines = @\\(Get-Content -Path 'c:\\\\Users\\\\PHOENIX\\\\Desktop\\\\Pag Domotica\\\\2. Pag proncipal\\\\Inicio.html'\\); Write-Host \"Total de líneas: $\\($lines.Count\\)\")"
+    ]
+  }
+}

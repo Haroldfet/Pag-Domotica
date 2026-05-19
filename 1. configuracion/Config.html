@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Configuracion WiFi</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: radial-gradient(1200px 800px at 10% 10%, #1f2b2a 0%, #141414 45%, #0c0c0c 100%);
+      font-family: "Merriweather", "Georgia", serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      color: #f3f4f6;
+    }
+    .card {
+      background: rgba(20, 20, 20, 0.85);
+      padding: 40px;
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 24px 60px rgba(0,0,0,0.45);
+      width: 90%;
+      max-width: 420px;
+      -webkit-backdrop-filter: blur(8px);
+      backdrop-filter: blur(8px);
+    }
+    h1 {
+      margin-bottom: 10px;
+      color: #9ae6b4;
+      font-size: 28px;
+      letter-spacing: 0.5px;
+    }
+    p.subtitle {
+      color: #cbd5e1;
+      margin-bottom: 24px;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .form-group {
+      margin-bottom: 18px;
+    }
+    label {
+      display: block;
+      margin-bottom: 8px;
+      color: #e2e8f0;
+      font-size: 13px;
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+    }
+    input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid #1f2937;
+      border-radius: 10px;
+      background: #111827;
+      color: #f8fafc;
+      font-size: 15px;
+      transition: border 0.3s, box-shadow 0.3s;
+    }
+    input:focus {
+      outline: none;
+      border-color: #6ee7b7;
+      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 12px 24px rgba(16, 185, 129, 0.25);
+    }
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 16px 32px rgba(16, 185, 129, 0.3);
+    }
+  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="card">
+    <h1>Configurar WiFi</h1>
+    <p class="subtitle">Conecta tu ESP32 a tu red. Esta configuracion solo se hace una vez.</p>
+    <form action="/guardar" method="POST">
+      <div class="form-group">
+        <label>SSID (Nombre de la red)</label>
+        <input type="text" name="ssid" placeholder="nombre_red" required>
+      </div>
+      <div class="form-group">
+        <label>Contrasena</label>
+        <input type="password" name="pass" placeholder="contrasena" required>
+      </div>
+      <button type="submit">Conectar</button>
+    </form>
+  </div>
+</body>
+</html>
